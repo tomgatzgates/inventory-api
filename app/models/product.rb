@@ -4,4 +4,11 @@ class Product < ApplicationRecord
 
   validates :name, presence: true, length: { minimum: 3, maximum: 50 }
   validates :price, presence: true, numericality: { greater_than: 0 }
+
+  def metadata
+    metafields.reduce({}) do |object, metafield|
+      object[metafield.key] = metafield.value_string
+      object
+    end
+  end
 end

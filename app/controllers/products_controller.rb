@@ -21,6 +21,7 @@ class ProductsController < ApplicationController
 
   def update
     @product.update!(product_params)
+    create_metafields if metafields_params.values.any?
     render_json(@product)
   end
 
@@ -33,13 +34,13 @@ class ProductsController < ApplicationController
 
   def create_variants
     variants_params[:variants].each do |variant_params|
-      @product.variants.create!(variant_params)
+      @product.variants.find_or_initialize_by(variant_params) { |variant| variant.save! }
     end
   end
 
   def create_metafields
     metafields_params[:metafields].each do |metafield_params|
-      @product.metafields.create!(metafield_params)
+      @product.metafields.find_or_initialize_by(metafield_params) { |metafield| metafield.save! }
     end
   end
 
