@@ -47,30 +47,85 @@ RSpec.describe 'Products API', type: :request do
   end
 
   describe 'POST /products' do
-    let(:valid_attributes) { { name: 'Coffee Bag', price: 6.95 } }
+    context 'without variants' do
+      context 'when the request is valid' do
+        let(:valid_attributes) { { name: 'Coffee Bag', price: 6.95 } }
 
-    context 'when the request is valid' do
-      before { post '/products', params: valid_attributes }
+        before { post '/products', params: valid_attributes }
 
-      it 'creates a product' do
-        expect(json['name']).to eq('Coffee Bag')
+        it 'creates a product' do
+          expect(json['name']).to eq('Coffee Bag')
+        end
+
+        it 'returns status code 201' do
+          expect(response).to have_http_status(201)
+        end
       end
 
-      it 'returns status code 201' do
-        expect(response).to have_http_status(201)
+      context 'when the request is invalid' do
+        before { post '/products', params: { name: 'Foobar' } }
+
+        it 'returns status code 422' do
+          expect(response).to have_http_status(422)
+        end
+
+        it 'returns a validation failure message' do
+          expect(response.body)
+            .to match(/Validation failed: Price can't be blank/)
+        end
       end
     end
 
-    context 'when the request is invalid' do
-      before { post '/products', params: { name: 'Foobar' } }
+    context 'with variants' do
+      context 'when the request is valid' do
+        before { post '/products', params: valid_attributes }
 
-      it 'returns status code 422' do
-        expect(response).to have_http_status(422)
+        let(:valid_attributes) do
+          {
+            name: 'Coffee Bag',
+            price: 6.95,
+            variants: [
+              { option1: '250g', price: 5 },
+              { option1: '500g', price: 10 },
+            ],
+          }
+        end
+
+        it 'creates a product' do
+          expect(json['name']).to eq('Coffee Bag')
+        end
+
+        it 'creates variants' do
+          expect(Variant.count).to eq 2
+        end
+
+        it 'returns status code 201' do
+          expect(response).to have_http_status(201)
+        end
       end
 
-      it 'returns a validation failure message' do
-        expect(response.body)
-          .to match(/Validation failed: Price can't be blank/)
+      context 'when the request is invalid' do
+        before { post '/products', params: invalid_attributes }
+
+        let(:invalid_attributes) do
+          {
+            name: 'Coffee Bag',
+            price: 6.95,
+            variants: [
+              { option1: '250g', price: nil },
+              { option1: '500g', price: 10 },
+            ],
+          }
+        end
+
+        it 'returns status code 422' do
+          expect(response).to have_http_status(422)
+        end
+
+        it 'returns a validation failure message' do
+          expect(response.body)
+            .to match(/Validation failed: Price can't be blank/)
+        end
       end
     end
   end
