@@ -35,6 +35,7 @@ ActiveRecord::Schema.define(version: 20170712095132) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["product_id"], name: "index_variants_on_product_id"
+    t.index ["sku"], name: "index_variants_on_sku"
   end
 
 end
