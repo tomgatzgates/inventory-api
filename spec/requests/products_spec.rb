@@ -188,9 +188,9 @@ RSpec.describe 'Products API', type: :request do
     let(:product_id) { product.id }
     let(:valid_attributes) { { name: 'Big Coffee Bag' } }
 
-    context 'when the record exists' do
-      before { put "/products/#{product_id}", params: valid_attributes }
+    before { put "/products/#{product_id}", params: valid_attributes }
 
+    context 'when the record exists' do
       it 'updates the record' do
         expect(json).not_to be_empty
         expect(product.reload.name).to eq 'Big Coffee Bag'
@@ -198,6 +198,17 @@ RSpec.describe 'Products API', type: :request do
 
       it 'returns status code 204' do
         expect(response).to have_http_status(200)
+      end
+    end
+
+    context 'with exisiting assocation data' do
+      let!(:variant) { create :variant, price: BigDecimal.new('55'), product: product }
+      let(:valid_attributes) do
+        { variants: [{ id: variant.id, price: BigDecimal.new('15') }] }
+      end
+
+      it 'updates the assocation' do
+        expect(variant.reload.price).to eq BigDecimal.new('15')
       end
     end
   end
