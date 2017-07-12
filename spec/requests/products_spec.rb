@@ -47,7 +47,7 @@ RSpec.describe 'Products API', type: :request do
   end
 
   describe 'POST /products' do
-    context 'without variants' do
+    context 'only product params' do
       context 'when the request is valid' do
         let(:valid_attributes) { { name: 'Coffee Bag', price: 6.95 } }
 
@@ -125,6 +125,59 @@ RSpec.describe 'Products API', type: :request do
         it 'returns a validation failure message' do
           expect(response.body)
             .to match(/Validation failed: Price can't be blank/)
+        end
+      end
+    end
+
+    context 'with metafields' do
+      context 'when the request is valid' do
+        before { post '/products', params: valid_attributes }
+
+        let(:valid_attributes) do
+          {
+            name: 'Coffee Bag',
+            price: 6.95,
+            metafields: [
+              { key: 'Country', value: 'Brazil' },
+              { key: 'Altitude', value: '1400', suffix: 'm' },
+            ],
+          }
+        end
+
+        it 'creates a product' do
+          expect(json['name']).to eq('Coffee Bag')
+        end
+
+        it 'creates metafields' do
+          expect(Metafield.count).to eq 2
+        end
+
+        it 'returns status code 201' do
+          expect(response).to have_http_status(201)
+        end
+      end
+
+      context 'when the request is invalid' do
+        before { post '/products', params: invalid_attributes }
+
+        let(:invalid_attributes) do
+          {
+            name: 'Coffee Bag',
+            price: 6.95,
+            metafields: [
+              { key: 'Farm', value: nil },
+              { key: 'Altitude', value: '1400', suffix: 'm' },
+            ],
+          }
+        end
+
+        it 'returns status code 422' do
+          expect(response).to have_http_status(422)
+        end
+
+        it 'returns a validation failure message' do
+          expect(response.body)
+            .to match(/Validation failed: Value can't be blank/)
         end
       end
     end

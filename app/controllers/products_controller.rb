@@ -13,6 +13,7 @@ class ProductsController < ApplicationController
     ActiveRecord::Base.transaction do
       @product = Product.create!(product_params)
       create_variants if variants_params.values.any?
+      create_metafields if metafields_params.values.any?
     end
 
     render_json(@product, :created)
@@ -36,6 +37,12 @@ class ProductsController < ApplicationController
     end
   end
 
+  def create_metafields
+    metafields_params[:metafields].each do |metafield_params|
+      @product.metafields.create!(metafield_params)
+    end
+  end
+
   def set_product
     @product = Product.find(params[:id])
   end
@@ -46,5 +53,9 @@ class ProductsController < ApplicationController
 
   def variants_params
     params.permit(variants: [:option1, :option2, :option3, :price])
+  end
+
+  def metafields_params
+    params.permit(metafields: [:key, :value, :prefix, :suffix])
   end
 end

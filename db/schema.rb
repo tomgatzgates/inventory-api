@@ -10,10 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170712123812) do
+ActiveRecord::Schema.define(version: 20170712124503) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "metafields", force: :cascade do |t|
+    t.bigint "product_id", null: false
+    t.string "key", null: false
+    t.string "value", null: false
+    t.string "prefix"
+    t.string "suffix"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_id"], name: "index_metafields_on_product_id"
+  end
 
   create_table "products", force: :cascade do |t|
     t.string "name", null: false
