@@ -7,6 +7,7 @@ module ExceptionHandler
     end
 
     rescue_from ActiveRecord::RecordInvalid do |e|
+      binding.pry
       render_json({ message: e.message }, :unprocessable_entity)
     end
   end
